@@ -1,30 +1,125 @@
 package config
 
 import (
+	"flag"
 	"fmt"
 	"os"
 )
 
 type Config struct {
-	validate bool
-	stdin    bool
+	Command string
+
+	// For validate
+	CardNumbersToValidate []string
+	Stdin    	bool
+
+	// For generate
+	CardNumberToGenerate string
+	Pick		bool
+	
+	// For information
+	BrandsFile string
+	IssuersFile string
+	CardNumbersToInform []string
+	
+	// For issue
+	Brand string
+	Issuer string
 }
 
-func ParseFlags() {
-	return nil
-}
+var Cfg Config
 
-func ParseCommand(cfg *Config) error {
-	if len(os.Args) < 2 {
+func ParseCommand() error {
+	args := os.Args[1:]
+	if len(args) < 2 {
 		return fmt.Errorf("Error: Not enough arguments")
 	}
-	command := os.Args[1]
+
+	command := args[0]
 	switch command {
 	case "validate":
-
+		Cfg.Command = command
+		os.Args = append(os.Args[:1], os.Args[2:]...)
+		args = os.Args[1:]
+		flag.BoolVar(&Cfg.Stdin, "stdin", false, "To get card numbers from standard input pipeline")
+		flag.Parse()
+		if !Cfg.Stdin {
+			Cfg.CardNumbersToValidate = args[1:]
+		} else if len(args) > 2{
+			return fmt.Errorf("Error: extra arguments with --stdin")
+		}
 	case "generate":
+		Cfg.Command = command
+		os.Args	= append(os.Args[:1], os.Args[2:]...)
+		args = os.Args[1:]
+		flag.BoolVar(&Cfg.Pick, "pick", false, "To generate only one random credit card")
+		flag.Parse()
+		if !Cfg.Pick  &&  len(args) == 2{
+			Cfg.CardNumberToGenerate = args[1]
+		} else if len(args) != 3 && Cfg.Pick{
+			return fmt.Errorf("Error: expected one card number after --pick")
+		} else {
+			return fmt.Errorf("Error: Extra arguments, expected one credit card number")
+		}
 	case "information":
+		Cfg.Command = command
+		os.Args = append(os.Args[:1], os.Args[2:]...)
+		flag.StringVar(&Cfg.BrandsFile, "brands", "./data/brands.txt", "Path to file with brands of cards")
+		flag.StringVar(&Cfg.IssuersFile, "issuers", "./data/issuers.txt", "Path to file with issuers of cards")
+		flag.Parse()
+		args = flag.Args()
+		if len(args) < 1 {
+			return fmt.Errorf("Error: at least one card number must be given")
+		}
+		Cfg.CardNumbersToInform = args
 	case "issue":
+		Cfg.Command = command
+		os.Args = append(os.Args[:1], os.Args[2:]...)
+		flag.StringVar(&Cfg.BrandsFile, "brands", "./data/brands.txt", "Path to file with brands of cards")
+		flag.StringVar(&Cfg.IssuersFile, "issuers", "./data/issuers.txt", "Path to file with issuers of cards")
+		flag.StringVar(&Cfg.Brand, "brand", "", "Brand to issue card number")
+		flag.StringVar(&Cfg.Issuer, "issuer", "", "Issuer to issue card number")
+		flag.Parse()
+		args = flag.Args()
+		if len(args) > 0 {
+			return fmt.Errorf("Error: Extra unknown flags for issue")
+		}
+	default: return fmt.Errorf("Error: Unknown command")
 	}
+
+	flag.Usage = func() {fmt.Println(HelpMessage)}
+
 	return nil
 }
+
+var HelpMessage = `Usage: creditcard [command] [options] [arguments]
+
+A program for credit card validation, generation, and information retrieval.
+
+Commands:
+  validate     Validate credit card number(s) using Luhn's Algorithm.
+               - Supports multiple numbers as arguments.
+               - Use --stdin to read numbers from standard input.
+
+  generate     Generate possible credit card numbers by replacing up to 4 trailing asterisks (*) with digits.
+               - Use --pick to randomly select a single valid number.
+               - Exits with status 1 for invalid input.
+
+  information  Retrieve details about credit card(s), including validity, brand, and issuer.
+               - Requires --brands and --issuers files for lookup.
+               - Supports multiple numbers as arguments.
+               - Use --stdin to read numbers from standard input.
+
+  issue        Generate a random valid credit card number for a specified brand and issuer.
+               - Requires --brands and --issuers files.
+               - Specify --brand and --issuer for targeted generation.
+               - Exits with status 1 for errors.
+
+Options:
+  --help   Show this help message and exit.
+  --stdin      Read credit card numbers from standard input (for validate and information commands).
+  --pick       Randomly select a single result (for generate command).
+  --brands     Path to the file containing card brand prefixes (for information and issue commands).
+  --issuers    Path to the file containing issuer prefixes (for information and issue commands).
+  --brand      Specify the brand for card issuance (for issue command).
+  --issuer     Specify the issuer for card issuance (for issue command).`
