@@ -2,7 +2,7 @@ package main
 
 import (
 	"creditcard/config"
-	"fmt"
+	"creditcard/utils"
 	"log"
 )
 
@@ -12,5 +12,28 @@ func main() {
 		log.Fatal(err)
 	}
 	
-	fmt.Println(config.Cfg) 
+	switch config.Cfg.Command {
+	case "validate":
+		if config.Cfg.Stdin {
+			err := utils.ValidateFromStdin()
+			if err != nil {
+				log.Fatal("Error: ", err)
+			}
+		} else {
+			err := utils.ValidateCardNumbers(config.Cfg.CardNumbersToValidate)
+			if err != nil {
+				log.Fatal("Error: ", err)
+			}
+		}
+		
+	case "generate":
+		if config.Cfg.Pick {
+
+		}else {
+			
+		}
+	case "information":
+	case "issue":
+	default: log.Fatal("Error: command not provided")
+	}
 }
