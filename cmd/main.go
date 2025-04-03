@@ -4,6 +4,7 @@ import (
 	"creditcard/config"
 	"creditcard/utils"
 	"log"
+	"strings"
 )
 
 func main() {
@@ -27,11 +28,11 @@ func main() {
 		}
 		
 	case "generate":
-		if config.Cfg.Pick {
-
-		}else {
-			
-		}
+		prompt := strings.TrimSpace(config.Cfg.CardPromptToGenerate)
+		err := utils.GenerateCardNumbers(prompt, config.Cfg.Pick)
+		if err != nil {
+			log.Fatal("Error: ", err)
+		} 
 	case "information":
 	case "issue":
 	default: log.Fatal("Error: command not provided")
