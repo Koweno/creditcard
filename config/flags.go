@@ -32,49 +32,49 @@ var Cfg Config
 func ParseCommand() error {
 	args := os.Args[1:]
 	if len(args) < 2 {
-		return fmt.Errorf("Error: Not enough arguments")
+		return fmt.Errorf("not enough arguments")
 	}
 
 	command := args[0]
+	os.Args = append(os.Args[:1], os.Args[2:]...)
 	switch command {
 	case "validate":
 		Cfg.Command = command
-		os.Args = append(os.Args[:1], os.Args[2:]...)
-		args = os.Args[1:]
 		flag.BoolVar(&Cfg.Stdin, "stdin", false, "To get card numbers from standard input pipeline")
 		flag.Parse()
+		args = flag.Args()
 		if !Cfg.Stdin {
-			Cfg.CardNumbersToValidate = args[1:]
+			Cfg.CardNumbersToValidate = args
 		} else if len(args) > 2{
-			return fmt.Errorf("Error: extra arguments with --stdin")
+			return fmt.Errorf("extra arguments with --stdin")
 		}
 	case "generate":
-		Cfg.Command = command
-		os.Args	= append(os.Args[:1], os.Args[2:]...)
-		args = os.Args[1:]
+		Cfg.Command = command 
 		flag.BoolVar(&Cfg.Pick, "pick", false, "To generate only one random credit card")
 		flag.Parse()
-		if !Cfg.Pick  &&  len(args) == 2{
-			Cfg.CardNumberToGenerate = args[1]
-		} else if len(args) != 3 && Cfg.Pick{
-			return fmt.Errorf("Error: expected one card number after --pick")
-		} else {
-			return fmt.Errorf("Error: Extra arguments, expected one credit card number")
+		args = flag.Args()
+		fmt.Println("THIS IS ARGUMENTS: ", args)
+		if !Cfg.Pick  &&  len(args) != 1{
+			return fmt.Errorf("expected only one credit card number prompt")
+		} else if len(args) != 1 && Cfg.Pick{
+			return fmt.Errorf("expected only one card number after --pick")
+		} else if !Cfg.Pick {
+			
+		} else if Cfg.Pick {
+
 		}
 	case "information":
 		Cfg.Command = command
-		os.Args = append(os.Args[:1], os.Args[2:]...)
 		flag.StringVar(&Cfg.BrandsFile, "brands", "./data/brands.txt", "Path to file with brands of cards")
 		flag.StringVar(&Cfg.IssuersFile, "issuers", "./data/issuers.txt", "Path to file with issuers of cards")
 		flag.Parse()
 		args = flag.Args()
 		if len(args) < 1 {
-			return fmt.Errorf("Error: at least one card number must be given")
+			return fmt.Errorf("at least one card number must be given")
 		}
 		Cfg.CardNumbersToInform = args
 	case "issue":
 		Cfg.Command = command
-		os.Args = append(os.Args[:1], os.Args[2:]...)
 		flag.StringVar(&Cfg.BrandsFile, "brands", "./data/brands.txt", "Path to file with brands of cards")
 		flag.StringVar(&Cfg.IssuersFile, "issuers", "./data/issuers.txt", "Path to file with issuers of cards")
 		flag.StringVar(&Cfg.Brand, "brand", "", "Brand to issue card number")
@@ -82,9 +82,9 @@ func ParseCommand() error {
 		flag.Parse()
 		args = flag.Args()
 		if len(args) > 0 {
-			return fmt.Errorf("Error: Extra unknown flags for issue")
+			return fmt.Errorf("extra unknown flags for issue")
 		}
-	default: return fmt.Errorf("Error: Unknown command")
+	default: return fmt.Errorf("unknown command")
 	}
 
 	flag.Usage = func() {fmt.Println(HelpMessage)}
