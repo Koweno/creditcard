@@ -14,7 +14,7 @@ type Config struct {
 	Stdin    	bool
 
 	// For generate
-	CardNumberToGenerate string
+	CardPromptToGenerate string
 	Pick		bool
 	
 	// For information
@@ -53,16 +53,16 @@ func ParseCommand() error {
 		flag.BoolVar(&Cfg.Pick, "pick", false, "To generate only one random credit card")
 		flag.Parse()
 		args = flag.Args()
-		fmt.Println("THIS IS ARGUMENTS: ", args)
 		if !Cfg.Pick  &&  len(args) != 1{
 			return fmt.Errorf("expected only one credit card number prompt")
 		} else if len(args) != 1 && Cfg.Pick{
 			return fmt.Errorf("expected only one card number after --pick")
-		} else if !Cfg.Pick {
-			
-		} else if Cfg.Pick {
-
+		} else if len(args) > 0 {
+			Cfg.CardPromptToGenerate = args[0]
+		} else {
+			return fmt.Errorf("unexpected error, please contact to email: koblandikz@gmail.com")
 		}
+		
 	case "information":
 		Cfg.Command = command
 		flag.StringVar(&Cfg.BrandsFile, "brands", "./data/brands.txt", "Path to file with brands of cards")
