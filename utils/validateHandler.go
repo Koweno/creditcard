@@ -68,3 +68,14 @@ func LuhnAlgorithm(num string) (bool, error) {
 		}
 		return sum % 10 == 0 && sum != 0, nil
 }
+
+func ValidateForKnownCard(cardNumber string) bool {
+	if (len(cardNumber) == 13 || len(cardNumber) == 16) && cardNumber[0] == '4' {
+		return true // Visa
+	} else if len(cardNumber) == 16 && cardNumber[0] == '5' && cardNumber[1] >= '1' && cardNumber[1] <= '5' {
+		return true // MasterCard
+	} else if len(cardNumber) == 15 && cardNumber[0] == '3' && (cardNumber[1] == '4' || cardNumber[1] == '7') {
+		return true // American Express
+	} 
+	return false
+} 
