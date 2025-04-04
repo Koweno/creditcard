@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 )
 
 type Config struct {
@@ -20,7 +21,7 @@ type Config struct {
 	// For information
 	BrandsFile string
 	IssuersFile string
-	CardNumbersToInform []string
+	CardNumberToInform string
 	
 	// For issue
 	Brand string
@@ -69,10 +70,14 @@ func ParseCommand() error {
 		flag.StringVar(&Cfg.IssuersFile, "issuers", "./data/issuers.txt", "Path to file with issuers of cards")
 		flag.Parse()
 		args = flag.Args()
+
 		if len(args) < 1 {
-			return fmt.Errorf("at least one card number must be given")
-		}
-		Cfg.CardNumbersToInform = args
+			return fmt.Errorf("one card number must be given")
+		} else if strings.TrimSpace(Cfg.BrandsFile) == "" || strings.TrimSpace(Cfg.IssuersFile) == "" {
+			return fmt.Errorf("brands file and issuers file mustn't be empty")
+		} 
+		
+		Cfg.CardNumberToInform = strings.Join(args, "")
 	case "issue":
 		Cfg.Command = command
 		flag.StringVar(&Cfg.BrandsFile, "brands", "./data/brands.txt", "Path to file with brands of cards")

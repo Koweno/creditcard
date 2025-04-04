@@ -52,8 +52,6 @@ func GenerateCardNumbers(cardPrompt string, pick bool) error {
 		}
 	}
 	
-
-
 	return nil
 }
 
