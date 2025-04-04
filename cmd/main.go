@@ -58,7 +58,14 @@ func main() {
 		}
 		utils.PrintInfoResult(&cardInfo)
 	case "issue":
-
+		cardPrefix, err := utils.GetCardPrefixWithCardBrand(config.Cfg.BrandsFile, config.Cfg.IssuersFile , config.Cfg.Brand, config.Cfg.Issuer)
+		if err != nil {
+			log.Fatal("Error: ", err)
+		}
+		err = utils.IssueCardNumber(cardPrefix, config.Cfg.Brand)
+		if err != nil {
+			log.Fatal("Error: ", err)
+		}
 	default: log.Fatal("Error: command not provided")
 	}
 }
