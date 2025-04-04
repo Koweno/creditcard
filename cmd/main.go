@@ -42,7 +42,7 @@ func main() {
 		}
 		if !utils.ValidateForKnownCard(cardNum) {
 			log.Fatal("Error: provided card is not in known card format")
-		} 
+		}
 		if !cardInfo.Correct {
 			utils.PrintInfoResult(&cardInfo)
 			return
